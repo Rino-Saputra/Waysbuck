@@ -104,11 +104,12 @@ exports.getTransaction= async ( req, res) => {
                         id: data.product.id,
                         title: data.product.name,
                         price: data.product.price,
-                        image: data.product.image,
+                        image: process.env.FILE_PATH+data.product.image,
                         toppings: data.toppingOrder.map((data)=>{
                             return{
                                 id: data.toppingId,
-                                name: data.topping.name
+                                name: data.topping.name,
+                                image: process.env.FILE_PATH+data.topping.image
                             }                
                         })
                     }
@@ -196,7 +197,8 @@ exports.getDetailTransaction= async (req, res) => {
                     toppings: data.toppingOrder.map((data)=>{
                         return{
                             id: data.toppingId,
-                            name: data.topping.name
+                            name: data.topping.name,
+                            image: process.env.FILE_PATH+data.topping.image
                         }                
                     })
                 }
@@ -302,11 +304,12 @@ exports.myTransaction= async (req, res) => {
                         id: data.product.id,
                         title: data.product.name,
                         price: data.product.price,
-                        image: data.product.image,
+                        image: process.env.FILE_PATH+data.product.image,
                         toppings: data.toppingOrder.map((data)=>{
                             return{
                                 id: data.toppingId,
-                                name: data.topping.name
+                                name: data.topping.name,
+                                image: process.env.FILE_PATH+data.topping.image
                             }                
                         })
                     }
@@ -326,4 +329,101 @@ exports.myTransaction= async (req, res) => {
             error: err
         })
     }
+}
+
+exports.editsTransaction= async (req, res) => {
+    try{
+
+        await transaction.update(
+            { transactionStatus: req.body.status  },
+            {
+                where: {
+                    id: req.params.id
+                }
+            }
+        )
+
+        let result= await transaction.findOne({
+            where:{
+                id: req.params.id
+            },
+            include:[
+                {
+                    model: user,
+                    as: "user",
+                    attributes: {
+                        exclude: ['createdAt','updatedAt','password']
+                    }
+                },
+                {
+                    model: productOrder,
+                    as: "productOrder",
+                    attributes: {
+                        exclude: ['createdAt','updatedAt',"idProduct","idTransaction","id"]
+                    },
+                    include: [
+                        {
+                            model: product,
+                            as: "product",
+                            attributes: {
+                                exclude: ['createdAt','updatedAt']
+                            },
+                        },
+                        {
+                            model: toppingOrder,
+                            as: "toppingOrder",
+                            attributes: {
+                                exclude: ['createdAt','updatedAt',"idProductOrder","id"]
+                            },
+                            include:[
+                                {
+                                    model: topping,
+                                    as: "topping",
+                                    attributes: {
+                                        exclude: ['createdAt','updatedAt',"idProductOrder","id"]
+                                    },
+                                }
+                            ]
+                        }
+                    ]
+                }
+            ]
+        })
+
+        let resultToSend={
+            id: result.id,
+            userOrder:{
+                id: result.user.id,
+                fullName: result.user.name,
+                email: result.user.email
+            },
+            status: result.transactionStatus,
+            order:result.productOrder.map((data)=>{
+                return{
+                    id: data.product.id,
+                    title: data.product.name,
+                    price: data.product.price,
+                    image: process.env.FILE_PATH+data.product.image,
+                    toppings: data.toppingOrder.map((data)=>{
+                        return{
+                            id: data.toppingId,
+                            name: data.topping.name,
+                            image: process.env.FILE_PATH+data.topping.image
+                        }                
+                    })
+                }
+            })
+        }
+
+        res.send({
+            status: "suucces",
+            resultToSend
+        })
+
+    } catch(err){
+        console.log(err);
+        res.send({
+            error: err
+        })
+    }   
 }

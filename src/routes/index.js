@@ -6,7 +6,7 @@ const router = express.Router()
 const { register, login } = require('../controller/auth')
 const { addProduct, changeProduct, delProduct, getDetailProduct, getProducts } = require('../controller/product')
 const { addToping, getToppings, getDetailTopping, changeToping, deleteToping } = require('../controller/topping');
-const { addTransaction, getTransaction, getDetailTransaction, deleteTransaction, myTransaction } = require('../controller/transaction');
+const { addTransaction, getTransaction, getDetailTransaction, deleteTransaction, myTransaction, editsTransaction } = require('../controller/transaction');
 
 
 // import middleware here
@@ -32,6 +32,7 @@ router.get('/transactions',getTransaction)
 router.get('/transaction/:idtrans',getDetailTransaction)
 router.delete('/transaction/:id',deleteTransaction);
 router.get('/my-transaction/:id',myTransaction);
+router.patch('/transaction/:id', editsTransaction)
 
 router.post('/register', register)
 router.post('/login', login)

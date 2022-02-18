@@ -36,6 +36,7 @@ exports.register = async (req, res) => {
       name: req.body.name,
       email: req.body.email,
       password: hashedPassword,
+      image: "default-user.png"
     });
 
     // generate token
@@ -104,6 +105,7 @@ exports.login = async (req, res) => {
       data: {
         name: userExist.name,
         email: userExist.email,
+        image: process.env.FILE_PATH+userExist.image,
         token
       },
     });
